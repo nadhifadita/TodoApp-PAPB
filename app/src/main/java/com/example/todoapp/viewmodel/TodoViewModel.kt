@@ -17,6 +17,11 @@ class TodoViewModel : ViewModel() {
             if (t.id == id) t.copy(isDone = !t.isDone) else t
         }
     }
+    fun editTask(id: Int, newTitle: String) {
+        _todos.value = _todos.value.map { t ->
+            if (t.id == id) t.copy(title = newTitle) else t
+        }
+    }
     fun deleteTask(id: Int) {
         _todos.value = _todos.value.filterNot { it.id == id }
     }
