@@ -23,6 +23,7 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
     var text by rememberSaveable { mutableStateOf("") }
     var editingTodo by remember { mutableStateOf<Todo?>(null) }
     var editedText by remember { mutableStateOf("") }
+    var filter by rememberSaveable { mutableStateOf("All") }
 
     val gradient = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFF8E1), Color(0xFFFFE0B2))
@@ -76,6 +77,18 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
                 }
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterButton(text = "Semua", selected = filter == "All") { filter = "All" }
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterButton(text = "Selesai", selected = filter == "Completed") { filter = "Completed" }
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterButton(text = "Belum Selesai", selected = filter == "Incomplete") { filter = "Incomplete" }
+            }
+
             Text(
                 text = "📌 Daftar Tugas",
                 style = MaterialTheme.typography.titleMedium.copy(
@@ -88,7 +101,12 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
             Divider(color = Color(0xFF8D6E63))
 
             LazyColumn {
-                items(todos) { todo ->
+                val filteredTodos = when (filter) {
+                    "Completed" -> todos.filter { it.isDone }
+                    "Incomplete" -> todos.filter { !it.isDone }
+                    else -> todos
+                }
+                items(filteredTodos) { todo ->
                     TodoItem(
                         todo = todo,
                         onToggle = { vm.toggleTask(todo.id) },
@@ -124,5 +142,18 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun FilterButton(text: String, selected: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Text(text)
     }
 }
