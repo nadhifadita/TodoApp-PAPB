@@ -24,6 +24,7 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
     var editingTodo by remember { mutableStateOf<Todo?>(null) }
     var editedText by remember { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf("All") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     val gradient = Brush.verticalGradient(
         colors = listOf(Color(0xFFFFF8E1), Color(0xFFFFE0B2))
@@ -76,6 +77,13 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
                     }
                 }
             }
+            
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Cari tugas...") },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -88,6 +96,14 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
                 Spacer(modifier = Modifier.width(8.dp))
                 FilterButton(text = "Belum Selesai", selected = filter == "Incomplete") { filter = "Incomplete" }
             }
+
+            val completedCount = todos.count { it.isDone }
+            val incompleteCount = todos.size - completedCount
+            Text(
+                text = "Selesai: $completedCount, Aktif: $incompleteCount",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+            )
 
             Text(
                 text = "📌 Daftar Tugas",
@@ -105,7 +121,8 @@ fun TodoScreen(vm: TodoViewModel = viewModel()) {
                     "Completed" -> todos.filter { it.isDone }
                     "Incomplete" -> todos.filter { !it.isDone }
                     else -> todos
-                }
+                }.filter { it.title.contains(searchQuery, ignoreCase = true) }
+
                 items(filteredTodos) { todo ->
                     TodoItem(
                         todo = todo,
